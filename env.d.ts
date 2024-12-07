@@ -1,6 +1,7 @@
 declare namespace NodeJS{
     interface ProcessEnv {
         PORT: string,
-        MongoURI: string
+        MongoURI: string,
+        PatternPassword: RegExp
     }
 }
