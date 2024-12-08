@@ -1,6 +1,8 @@
-import {object, string, z} from 'zod'
+import {object, string, z} from 'zod';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const userSchema = z.object({
+export const userSchema = z.object({
     body: object({
         userName: string({
             required_error: 'userName is required'
