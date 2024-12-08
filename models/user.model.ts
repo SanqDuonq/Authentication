@@ -20,6 +20,12 @@ const userSchema:Schema<IUser> = new Schema({
     isVerifyEmail: {
         type: Boolean,
         default: false
+    },
+    verificationCode: {
+        type: String
+    },
+    verificationCodeExpireAt: {
+        type: Date
     }
 },  {timestamps: true})
 
