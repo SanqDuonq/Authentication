@@ -7,4 +7,5 @@ router.post('/sign-up',controller.signup);
 
 router.post('/verify-email',controller.verifyEmail);
 
+router.post('/reset-password',controller.resetPassword);
 export default router;
