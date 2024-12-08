@@ -7,7 +7,7 @@ async function sendVerifyEmail(email:string) {
             to: email,
             subject: 'Verify Email',
             text: 'Verify your email',
-            html: `Your OTP - ${OTP()}`
+            html: `Your OTP - ${OTP.OTP()}`
         });
         log.info('Email sent successful')
     } catch (error) {
