@@ -13,8 +13,8 @@ async function createUser(body: Partial<IUser>) {
         email: body.email,
         password: body.password,
         userName: body.userName,
-        verificationCode: OTP.OTP(),
-        verificationCodeExpireAt: OTP.OTPExpireAt()
+        verifyOTP: OTP.OTP(),
+        verifyOTPExpireAt: OTP.OTPExpireAt()
     })
     return await newUser.save();
 }
@@ -28,10 +28,10 @@ async function verifyEmail(email:string,code:string){
     if (!user){
         throw createErrors(404, 'User not found!')
     }
-    if (user.verificationCode !== code){
+    if (user.verifyOTP !== code){
         throw createErrors(400, 'Verification code is wrong!');
     }
-    if (user.verificationCodeExpireAt.toString() < OTP.OTPExpireAt.toString()) {
+    if (user.verifyOTPExpireAt.toString() < OTP.OTPExpireAt.toString()) {
         throw createErrors(400, 'OTP has expired!')
     }
     user.isVerifyEmail = true;
