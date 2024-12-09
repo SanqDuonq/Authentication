@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { userInput, userSchema } from "../utils/validate";
 import services from '../services/auth.services';
-import sendVerifyEmail from "../services/email.services";
 import { loginInput, loginSchema, verifyEmailInput } from "../schema/user.schema";
 import { z, ZodError } from 'zod';
 import { generateAccessToken, generateRefreshToken } from '../utils/jwt';
+import { sendForgotPasswordEmail, sendVerifyEmail } from '../services/email.services';
 
 async function signup(req:Request<userInput>,res:Response) {
     try {
@@ -12,7 +12,6 @@ async function signup(req:Request<userInput>,res:Response) {
             body: req.body
         }).body
         const user = await services.createUser(validateBody);
-
         res.status(201).json({
             status: 'Created user successful',
             data: user
@@ -44,7 +43,6 @@ async function login(req:Request<loginInput>,res:Response) {
             })
             return;
         }
-
         const password = await user?.validatePassword(validateBody.password);
         if (!password){
             res.status(400).json({
@@ -52,8 +50,17 @@ async function login(req:Request<loginInput>,res:Response) {
             })
             return;
         }
+        const otp = await sendVerifyEmail(validateBody.email);
+        if (!otp) {
+            res.status(500).json({
+                message: 'Sent OTP fail'
+            })
+            return;
+        }
+        user.verifyOTP = otp;
         const accessToken = generateAccessToken(res,user.id);
         const refreshToken = generateRefreshToken(res,user.id);
+        await user.save();
         res.status(200).json({
             message: 'Login successful!',
             accessToken,
@@ -89,18 +96,29 @@ async function forgotPassword(req:Request,res: Response) {
         res.status(404).json({
             message: 'Email not found!'
         })
+        return;
     }
+    sendForgotPasswordEmail(user.email);
     res.status(200).json({
         message: `Verification code sent to ${email}`
     })
+    
 }
 
+async function resetPassword(req:Request,res:Response){
 
+}
+
+async function logout(req:Request,res:Response){
+
+}
 
 
 export default {
     signup,
     login,
     verifyEmail,
-    forgotPassword
+    forgotPassword,
+    resetPassword,
+    logout
 }
