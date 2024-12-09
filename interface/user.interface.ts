@@ -3,8 +3,10 @@ interface IUser {
     email: string,
     password: string,
     isVerifyEmail: boolean,
-    verificationCode: string,
-    verificationCodeExpireAt: Date
+    verifyOTP: string,
+    verifyOTPExpireAt: Date,
+    resetOTP: string,
+    resetOTPExpireAt: Date
 }
 
 export default IUser;

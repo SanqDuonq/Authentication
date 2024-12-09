@@ -19,8 +19,12 @@ export const userSchema = z.object({
         password: string({
             required_error: 'password is required'
         })
-        .regex(process.env.PatternPassword, 'Password must be at least 8 character(s)'),
-
+        .refine((password) => {
+            const regex = new RegExp(process.env.PatternPassword);
+            return regex.test(password)
+        },{
+            message: 'Password must be at least 8 character(s)'
+        }),
         confirmPassword: string({
             required_error: 'Confirm password is required'
         })

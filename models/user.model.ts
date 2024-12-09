@@ -2,8 +2,13 @@ import mongoose, { Schema } from "mongoose";
 import IUser from "../interface/user.interface";
 import bcrypt from 'bcrypt';
 import log from "../utils/logger";
+import createErrors from 'http-errors';
 
-const userSchema:Schema<IUser> = new Schema({
+interface IUserMethod extends IUser {
+    validatePassword(candidatePassword:string):Promise<boolean>;
+}
+
+const userSchema:Schema<IUserMethod> = new Schema({
     userName: {
         type: String,
         required: true,
@@ -21,10 +26,16 @@ const userSchema:Schema<IUser> = new Schema({
         type: Boolean,
         default: false
     },
-    verificationCode: {
+    verifyOTP: {
         type: String
     },
-    verificationCodeExpireAt: {
+    verifyOTPExpireAt: {
+        type: Date
+    },
+    resetOTP: {
+        type: String
+    },
+    resetOTPExpireAt: {
         type: Date
     }
 },  {timestamps: true})
@@ -33,7 +44,6 @@ userSchema.pre('save', async function (next) {
     if (!this.isModified('password')){
         return next();
     }
-
     try {
         const hash = await bcrypt.hash(this.password,10);
         this.password = hash;
@@ -43,6 +53,16 @@ userSchema.pre('save', async function (next) {
         next(error as mongoose.CallbackError);
     }
 })
+
+userSchema.methods.validatePassword = async function (candidatePassword:string) {
+    try {
+        return await bcrypt.compare(candidatePassword,this.password);
+    } catch (error) {
+        log.error(`Error comparing password`)
+        throw createErrors(400, 'Email or password is wrong!')
+    }
+
+}
 
 //* Delete password user before
 userSchema.methods.toJSON = function () {
