@@ -27,7 +27,8 @@ const userSchema:Schema<IUserMethod> = new Schema({
         default: false
     },
     verifyOTP: {
-        type: String
+        type: String,
+        default: ''
     },
     verifyOTPExpireAt: {
         type: Date
