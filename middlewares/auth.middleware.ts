@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import log from '../utils/logger';
 dotenv.config();
 
-function verifyToken(req:Request,res:Response,next: NextFunction) {
+function verifyAccessToken(req:Request,res:Response,next: NextFunction) {
     const accessToken = req.cookies.accessToken;
     if (!accessToken){
         res.status(401).json({
@@ -13,7 +13,7 @@ function verifyToken(req:Request,res:Response,next: NextFunction) {
         return;
     }
     try {
-        jwt.verify(accessToken,process.env.JWT_SECRET);
+        jwt.verify(accessToken,process.env.JWT_ACCESS_SECRET);
         next();
     } catch (error) {
         log.error(`Error in verify token ${error}`)
@@ -25,5 +25,5 @@ function verifyToken(req:Request,res:Response,next: NextFunction) {
 }
 
 export default {
-    verifyToken
+    verifyAccessToken
 };
