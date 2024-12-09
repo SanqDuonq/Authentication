@@ -4,7 +4,10 @@ import dotenv from 'dotenv'
 dotenv.config();
 
 function generateAccessToken(res:Response, userId: string) {
-    const accessToken = jwt.sign(userId,process.env.JWT_SECRET, {expiresIn: '1d'});
+    const payload = {
+        userId
+    }
+    const accessToken = jwt.sign(payload,process.env.JWT_SECRET, {expiresIn: '30s'});
 
     res.cookie('accessToken', accessToken, {
         httpOnly: true,
@@ -12,6 +15,8 @@ function generateAccessToken(res:Response, userId: string) {
         sameSite: 'lax',
         maxAge: 1000 * 60 * 60 * 24
     })
+
+    return accessToken;
 }
 
 export default generateAccessToken;

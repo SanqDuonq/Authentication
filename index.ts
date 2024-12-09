@@ -1,9 +1,10 @@
 import express from 'express'
 import log from './utils/logger';
 import dotenv from 'dotenv';
-import NotFoundRoute from './middlewares/not-found-route';
+import NotFoundRoute from './middlewares/not-found-route.middleware';
 import connectMongoDB from './database/connect-mongoDB';
-import authRoute from './routes/auth.route'
+import authRoute from './routes/auth.route';
+import userRoute from './routes/user.route';
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 dotenv.config();
@@ -15,7 +16,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors({credentials:true}));
 
+
 app.use('/api/auth',authRoute)
+app.use('/api/auth',userRoute)
 app.use(NotFoundRoute);
 
 app.listen(port,() => {

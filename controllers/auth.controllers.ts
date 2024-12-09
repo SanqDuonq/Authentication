@@ -4,6 +4,7 @@ import services from '../services/auth.services';
 import sendVerifyEmail from "../services/email.services";
 import { loginInput, loginSchema, verifyEmailInput } from "../schema/user.schema";
 import { z, ZodError } from 'zod';
+import generateAccessToken from '../utils/jwt';
 
 async function signup(req:Request<userInput>,res:Response) {
     try {
@@ -44,6 +45,7 @@ async function login(req:Request<loginInput>,res:Response) {
             })
             return;
         }
+
         const password = await user?.validatePassword(validateBody.password);
         if (!password){
             res.status(400).json({
@@ -51,8 +53,11 @@ async function login(req:Request<loginInput>,res:Response) {
             })
             return;
         }
+
+        const accessToken = generateAccessToken(res,user.id);
         res.status(200).json({
-            message: 'Login successful!'
+            message: 'Login successful!',
+            accessToken
         })
     } catch (error) {
         if (error instanceof ZodError){
@@ -64,7 +69,6 @@ async function login(req:Request<loginInput>,res:Response) {
         res.status(500).json(`Server error ${error}`)
     }
 }
-
 
 async function verifyEmail(req:Request<verifyEmailInput>,res:Response) {
     const body = req.body;
@@ -90,6 +94,7 @@ async function forgotPassword(req:Request,res: Response) {
         message: `Verification code sent to ${email}`
     })
 }
+
 
 export default {
     signup,
