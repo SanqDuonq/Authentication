@@ -34,7 +34,8 @@ const userSchema:Schema<IUserMethod> = new Schema({
         type: Date
     },
     resetOTP: {
-        type: String
+        type: String,
+        default: ''
     },
     resetOTPExpireAt: {
         type: Date

@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import { userInput, userSchema } from "../utils/validate";
 import services from '../services/auth.services';
-import { loginInput, loginSchema, verifyEmailInput } from "../schema/user.schema";
+import { forgotPasswordInput, forgotPasswordSchema, loginInput, loginSchema, resetPasswordInput, resetPasswordSchema, verifyEmailInput } from "../schema/user.schema";
 import { z, ZodError } from 'zod';
 import { generateAccessToken, generateRefreshToken } from '../utils/jwt';
 import { sendForgotPasswordEmail, sendVerifyEmail } from '../services/email.services';
+import User from '../models/user.model';
 
 async function signup(req:Request<userInput>,res:Response) {
     try {
@@ -89,24 +90,69 @@ async function verifyEmail(req:Request<verifyEmailInput>,res:Response) {
     }
 }
 
-async function forgotPassword(req:Request,res: Response) {
-    const email = req.body.email;
-    const user = await services.findUserByEmail(email);
-    if (!user) {
-        res.status(404).json({
-            message: 'Email not found!'
+async function forgotPassword(req:Request<forgotPasswordInput>,res: Response) {
+    try {
+        const validateBody:forgotPasswordInput = forgotPasswordSchema.parse({
+            body: req.body
+        }).body
+        const user = await services.findUserByEmail(validateBody.email);
+        if (!user) {
+            res.status(404).json({
+                message: 'Email not found!'
+            })
+            return;
+        }
+        const otp = await sendForgotPasswordEmail(user.email);
+        if (!otp) {
+            res.status(400).json({
+                message: 'OTP sent fail'
+            })
+            return;
+        }
+        user.resetOTP = otp;
+        await user.save();
+        res.status(200).json({
+            message: `Verification code sent to ${validateBody.email}`
         })
-        return;
+    } catch (error:any) {
+        if (error instanceof ZodError){
+            res.status(400).json({
+                message: error.errors.map((data) => data.message)
+            })
+            return;
+        }
+        res.status(500).json(error.message)
     }
-    sendForgotPasswordEmail(user.email);
-    res.status(200).json({
-        message: `Verification code sent to ${email}`
-    })
-    
 }
 
-async function resetPassword(req:Request,res:Response){
-
+async function resetPassword(req:Request<resetPasswordInput>,res:Response){
+    try {
+        const validateBody: resetPasswordInput = resetPasswordSchema.parse({
+            body: req.body
+        }).body
+        const user = await User.findOne({
+            resetOTP: validateBody.code
+        })
+        if (!user){
+            res.status(400).json({
+                message: 'Reset code is wrong!'
+            })
+            return;
+        }
+        user.password = validateBody.password;
+        await user.save();
+        res.status(200).json({
+            message: 'Reset password successful!'
+        })
+    } catch (error:any) {
+        if (error instanceof ZodError) {
+            res.status(400).json({
+                message: error.errors.map((data) => data.message)
+            })
+            return;
+        }
+        res.status(500).json(error.message)
+    }
 }
 
 async function logout(req:Request,res:Response){
