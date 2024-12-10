@@ -2,7 +2,6 @@ declare namespace NodeJS{
     interface ProcessEnv {
         PORT: string,
         MongoURI: string,
-        PatternPassword: RegExp,
         SMTP_HOST: string,
         SMTP_PORT: number,
         SMTP_EMAIL: string,
